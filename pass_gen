@@ -1,0 +1,92 @@
+import string
+import random
+import argparse
+
+def evaluate_password(password,show_info=True):
+    result = False
+    pass_state = 0b00000
+    for char in password:
+        if char.isupper():
+            pass_state |=  0b00001 
+        elif char.islower():
+            pass_state |= 0b00010   
+        elif char.isdigit():
+            pass_state |= 0b00100 
+        else: 
+            pass_state |= 0b01000
+            
+
+    if len(password) >= 8 :
+        pass_state |= 0b10000
+        
+ 
+    #todo：输出结果
+
+    if pass_state == 0b11111:
+        if show_info:
+            print ('密码符合规范') 
+        result = True
+    else:
+        if show_info:
+            prompt = '密码不符合要求：'
+            if pass_state & 0b00001 == 0:
+                prompt += '密码必须包含大写，'
+            if pass_state & 0b00010 == 0:
+                prompt +='密码必须包含小写，'
+            if pass_state & 0b00100 == 0:
+                prompt += '密码必须包含数字，'
+            if pass_state & 0b01000 == 0:
+                prompt += '密码必须包含标点符号，'
+            if pass_state & 0b10000 == 0:
+                prompt += '密码必须大于8位，'
+            prompt = prompt[:-1]
+            print (prompt) 
+    return result 
+
+def generate_password():
+    all_char_set = string.printable[:-6]
+    all_char_set *= 9
+    result =''.join(random.sample(all_char_set, k=9))
+    return result
+
+def creat_password(pass_lenth,confuse=False):
+    result = ''
+    result += random.choice(string.ascii_uppercase)
+    result += random.choice(string.ascii_lowercase)
+    result += random.choice(string.digits)
+    result += random.choice(string.punctuation)
+    if confuse:
+        result += 'Il'
+        pass_lenth -= 4
+    result += ''.join(random.sample(string.printable[:-6]*pass_lenth, pass_lenth-4))
+    result = ''.join(random.sample(result, len(result)))
+    return result
+
+
+def main_userInput():
+    while 1:
+        user_password = input("请输入新密码：")
+        if evaluate_password(user_password): 
+            break
+    
+def main_genpassword():
+    while 1:
+        user_password = generate_password()
+        if evaluate_password(user_password,show_info=False):
+            print(f"新生成密码为：{user_password}")
+            break
+
+
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Generate new passwordz')
+    parser.add_argument('-l','--length',type=int, default=9,
+                        help='length of password (default:9)')
+    parser.add_argument('-c','--confuse',action='store_true',
+                        help='use confuse characters (I & l)')
+    args = parser.parse_args()
+
+    print(f"新生成密码为：{creat_password(args.length,args.confuse)}",)
+
+main()
